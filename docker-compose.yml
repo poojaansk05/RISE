@@ -1,0 +1,84 @@
+
+
+services:
+  mongodb:
+    image: mongo:latest
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+
+  redis:
+    image: redis:alpine
+    ports:
+      - "6379:6379"
+
+  api-gateway:
+    build: ./backend/api-gateway
+    ports:
+      - "3000:3000"
+    environment:
+      - JWT_SECRET=${JWT_SECRET}
+      - USER_SERVICE_URL=${USER_SERVICE_URL}
+      - POLICY_SERVICE_URL=${POLICY_SERVICE_URL}
+      - CLAIMS_SERVICE_URL=${CLAIMS_SERVICE_URL}
+      - PAYOUT_SERVICE_URL=${PAYOUT_SERVICE_URL}
+    depends_on:
+      - mongodb
+
+  user-service:
+    build: ./backend/user-service
+    environment:
+      - MONGO_URI=${MONGO_URI}
+      - JWT_SECRET=${JWT_SECRET}
+    depends_on:
+      - mongodb
+
+  policy-service:
+    build: ./backend/policy-service
+    environment:
+      - MONGO_URI=${MONGO_URI}
+    depends_on:
+      - mongodb
+
+  claims-service:
+    build: ./backend/claims-service
+    environment:
+      - MONGO_URI=${MONGO_URI}
+      - FRAUD_SERVICE_URL=${FRAUD_SERVICE_URL}
+      - PAYOUT_SERVICE_URL=${PAYOUT_SERVICE_URL}
+    depends_on:
+      - mongodb
+      - fraud-service
+
+  fraud-service:
+    build: ./backend/fraud-service
+    ports:
+      - "8000:8000"
+
+  payout-service:
+    build: ./backend/payout-service
+    environment:
+      - MONGO_URI=${MONGO_URI}
+      - REDIS_URL=${REDIS_URL}
+    depends_on:
+      - mongodb
+      - redis
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "5173:5173"
+
+  nginx:
+    image: nginx:alpine
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    ports:
+      - "80:80"
+    depends_on:
+      - frontend
+      - api-gateway
+
+volumes:
+  mongo_data:
