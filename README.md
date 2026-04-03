@@ -1,4 +1,4 @@
-# RISE:Resilent Income Shield Protocol
+# RISE:Resilient Income Shield Protocol
 
 A production-grade microservices platform providing automatic insurance payouts for food delivery workers (Swiggy/Zomato persona) based on weather disruptions and fraud analysis.
 
