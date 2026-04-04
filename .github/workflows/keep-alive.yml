@@ -9,7 +9,13 @@ jobs:
   ping:
     runs-on: ubuntu-latest
     steps:
-      - name: Ping Replit App
+      - name: Ping every minute for 5 minutes
         run: |
-          curl -s -o /dev/null -w "%{http_code}" https://8b9d424b-d20c-4798-9537-592afb776a3d-00-3k7ca1iakjcqu.pike.replit.dev
-          echo " - Pinged successfully"
+          URL="https://8b9d424b-d20c-4798-9537-592afb776a3d-00-3k7ca1iakjcqu.pike.replit.dev"
+          for i in 1 2 3 4 5; do
+            STATUS=$(curl -s -o /dev/null -w "%{http_code}" --max-time 30 "$URL")
+            echo "Ping $i: HTTP $STATUS"
+            if [ $i -lt 5 ]; then
+              sleep 60
+            fi
+          done
